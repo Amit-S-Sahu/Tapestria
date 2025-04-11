@@ -9,5 +9,4 @@ public class TapestriaBackendApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(TapestriaBackendApplication.class, args);
 	}
-
 }

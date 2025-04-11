@@ -1,5 +1,5 @@
-FROM eclipse-temurin:22-jdk
+FROM eclipse-temurin:21-jdk-alpine
 WORKDIR /app
-COPY backend/ /app
+COPY . .
 RUN ./mvnw clean package -DskipTests
 CMD ["java", "-jar", "target/backend-0.0.1-SNAPSHOT.jar"]

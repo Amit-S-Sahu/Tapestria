@@ -1,7 +1,13 @@
-FROM node:23-alpine
+# Build stage
+FROM node:22-alpine AS builder
 WORKDIR /app
-COPY frontend/ /app
-RUN npm install
-RUN npm run build
+COPY . /app
+RUN npm install && npm run build
+
+# Production stage
+FROM node:22-alpine
+RUN npm install -g serve
+WORKDIR /app
+COPY --from=builder /app/dist ./dist
 EXPOSE 3000
-CMD ["npm", "run", "start"]
+CMD ["serve", "-s", "dist", "-l", "3000"]
