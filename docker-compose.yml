@@ -16,7 +16,9 @@ services:
     container_name: tapestria-backend
     depends_on:
       - mysql
+        # condition: service_healthy
       - recommender
+        # condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://tapestria-db:3306/tapestria
       SPRING_DATASOURCE_USERNAME: root

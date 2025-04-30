@@ -1,10 +1,11 @@
 package com.tapestria.repository;
 
-import com.tapestria.model.User;
-import org.springframework.data.jpa.repository.JpaRepository;
-import java.util.*;
+import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findByUsername(String username);
-    Boolean existsByUsername(String username);
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.tapestria.model.User;
+
+public interface UserRepository extends JpaRepository<User, Integer> {
+    Optional<User> findByEmail(String email);
 }
