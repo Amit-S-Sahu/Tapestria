@@ -31,6 +31,13 @@ public class UsersManagementService {
     public ReqResp register(ReqResp registrationRequest) {
         ReqResp resp = new ReqResp();
         try {
+            Optional<User> existingUser = userRepository.findByEmail(registrationRequest.getEmail());
+            if (existingUser.isPresent()) {
+                resp.setStatusCode(400);
+                resp.setMessage("Email already exists");
+                return resp;
+            }
+
             User user = new User();
             user.setEmail(registrationRequest.getEmail());
             user.setRole(registrationRequest.getRole());
@@ -125,6 +132,27 @@ public class UsersManagementService {
             resp.setUser(usersById);
             resp.setStatusCode(200);
             resp.setMessage("Users with id '" + id + "' found successfully");
+        } 
+        catch (Exception e) {
+            resp.setStatusCode(500);
+            resp.setMessage(e.getMessage());
+        }
+        return resp;
+    }
+
+    public ReqResp getUsersByRole(String role) {
+        ReqResp resp = new ReqResp();
+        try {
+            List<User> usersByRole = userRepository.findByRole(role);
+            if (!usersByRole.isEmpty()) {
+                resp.setUserList(usersByRole);
+                resp.setStatusCode(200);
+                resp.setMessage("Users with role '" + role + "' found successfully");
+            } 
+            else {
+                resp.setStatusCode(404);
+                resp.setMessage("No users found with role '" + role + "'");
+            }
         } 
         catch (Exception e) {
             resp.setStatusCode(500);
