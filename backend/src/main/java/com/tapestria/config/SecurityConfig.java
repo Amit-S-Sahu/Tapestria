@@ -39,14 +39,14 @@ public class SecurityConfig {
                                                             .requestMatchers("/alluser/**").hasAnyAuthority("ADMIN", "LIBRARIAN", "USER")
                                                             .anyRequest().authenticated())
                     .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                    .authenticationProvider(authentcationProvider()).addFilterBefore(
+                    .authenticationProvider(authenticationProvider()).addFilterBefore(
                         jwtAuthFilter, UsernamePasswordAuthenticationFilter.class
                     );
         return httpSecurity.build();
     }
 
     @Bean
-    public AuthenticationProvider authentcationProvider() {
+    public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setUserDetailsService(usersDetailService);
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
