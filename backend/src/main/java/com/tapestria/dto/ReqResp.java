@@ -22,6 +22,7 @@ public class ReqResp {
     private String password;
     private String email;
     private String role;
+    private boolean enabled;
     private User user;
     private List<User> userList;
 }

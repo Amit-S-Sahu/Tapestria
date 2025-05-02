@@ -27,6 +27,7 @@ public class User implements UserDetails {
     @Column(unique = true)
     private String email;
     private String role;
+    private boolean enabled;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -55,6 +56,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return this.enabled;
     }
 }

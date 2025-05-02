@@ -43,6 +43,7 @@ public class UsersManagementService {
             user.setRole(registrationRequest.getRole());
             user.setUsername(registrationRequest.getUsername());
             user.setPassword(passwordEncoder.encode(registrationRequest.getPassword()));
+            user.setEnabled(true);
             User userResult = userRepository.save(user);
             if (userResult.getId() > 0) {
                 resp.setUser(userResult);
@@ -101,6 +102,53 @@ public class UsersManagementService {
             resp.setMessage(e.getMessage());
             return resp;
         }
+    }
+
+    public ReqResp changePassword(String email, ReqResp changePasswordRequest) {
+        ReqResp resp = new ReqResp();
+        try {
+            Optional<User> userOptional = userRepository.findByEmail(email);
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                user.setPassword(passwordEncoder.encode(changePasswordRequest.getPassword()));
+                userRepository.save(user);
+                resp.setStatusCode(200);
+                resp.setMessage("Password changed successfully");
+            } 
+            else {
+                resp.setStatusCode(404);
+                resp.setMessage("User not found for password change");
+            }
+        } 
+        catch (Exception e) {
+            resp.setStatusCode(500);
+            resp.setMessage(e.getMessage());
+        }
+        return resp;
+    }
+
+    public ReqResp toggleUserActive(Integer userId) {
+        ReqResp resp = new ReqResp();
+        try {
+            Optional<User> userOptional = userRepository.findById(userId);
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                user.setEnabled(!user.isEnabled());
+                User updatedUser = userRepository.save(user);
+                resp.setUser(updatedUser);
+                resp.setStatusCode(200);
+                resp.setMessage(user.isEnabled() ? "User account enabled successfully" : "User account disabled successfully");
+            } 
+            else {
+                resp.setStatusCode(404);
+                resp.setMessage("User not found for toggling status");
+            }
+        } 
+        catch (Exception e) {
+            resp.setStatusCode(500);
+            resp.setMessage(e.getMessage());
+        }
+        return resp;
     }
 
     public ReqResp getAllUsers() {
@@ -210,6 +258,37 @@ public class UsersManagementService {
             resp.setStatusCode(500);
             resp.setMessage(e.getMessage());
         }
+        return resp;
+    }
+
+    public ReqResp addLibrarianByAdmin(ReqResp addLibrarianRequest) {
+        ReqResp resp = new ReqResp();
+        try {
+            Optional<User> existingUser = userRepository.findByEmail(addLibrarianRequest.getEmail());
+            if (existingUser.isPresent()) {
+                resp.setStatusCode(400);
+                resp.setMessage("Email already exists");
+                return resp;
+            }
+
+            User user = new User();
+            user.setEmail(addLibrarianRequest.getEmail());
+            user.setRole("LIBRARIAN");
+            user.setUsername(addLibrarianRequest.getUsername());
+            user.setPassword(passwordEncoder.encode(addLibrarianRequest.getPassword()));
+            user.setEnabled(true);
+            User userResult = userRepository.save(user);
+            if (userResult.getId() > 0) {
+                resp.setUser(userResult);
+                resp.setMessage("Librarian registered successfully");
+                resp.setStatusCode(200);
+            }
+        } 
+        catch (Exception e) {
+            resp.setStatusCode(500);
+            resp.setError(e.getMessage());
+        }
+
         return resp;
     }
 

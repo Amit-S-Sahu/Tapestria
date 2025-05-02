@@ -53,9 +53,24 @@ public class UserManagementController {
         return ResponseEntity.ok(usersManagementService.getUsersByRole(role));
     }
 
+    @PutMapping("/admin/enable-disable/{userId}")
+    public ResponseEntity<ReqResp> enableDisableUser(@PathVariable Integer userId, @RequestBody ReqResp enableDisableRequest) {
+        return ResponseEntity.ok(usersManagementService.toggleUserActive(userId));
+    }
+
+    @PostMapping("/admin/add-librarian")
+    public ResponseEntity<ReqResp> addLibrarianByAdmin(@RequestBody ReqResp addLibrarianRequest) {
+        return ResponseEntity.ok(usersManagementService.addLibrarianByAdmin(addLibrarianRequest));
+    }
+
     @PutMapping("/admin/update/{userId}")
     public ResponseEntity<ReqResp> updateUser(@PathVariable Integer userId, @RequestBody User user) {
         return ResponseEntity.ok(usersManagementService.updateUser(userId, user));
+    }
+
+    @DeleteMapping("/admin/delete/{userId}")
+    public ResponseEntity<ReqResp> deleteUser(@PathVariable Integer userId) {
+        return ResponseEntity.ok(usersManagementService.deleteUser(userId));
     }
 
     @GetMapping("/alluser/get-profile")
@@ -66,8 +81,10 @@ public class UserManagementController {
         return ResponseEntity.status(resp.getStatusCode()).body(resp);
     }
 
-    @DeleteMapping("/admin/delete/{userId}")
-    public ResponseEntity<ReqResp> deleteUser(@PathVariable Integer userId) {
-        return ResponseEntity.ok(usersManagementService.deleteUser(userId));
+    @PutMapping("/alluser/change-password")
+    public ResponseEntity<ReqResp> changePassword(@RequestBody ReqResp changePasswordRequest) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        return ResponseEntity.ok(usersManagementService.changePassword(email, changePasswordRequest));
     }
 }
