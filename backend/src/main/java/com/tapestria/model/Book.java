@@ -20,7 +20,7 @@ public class Book {
     String author;
     @Column(name = "bookformat")
     String bookFormat;
-    @Column(name = "desc")
+    @Column(name = "description")
     String description;
     @Column(name = "img")
     String imageLink;
