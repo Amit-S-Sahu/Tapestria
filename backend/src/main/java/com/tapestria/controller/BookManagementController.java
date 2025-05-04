@@ -116,4 +116,33 @@ public class BookManagementController {
         review.setReviewDate(new Date());
         return ResponseEntity.ok(reviewRepository.save(review));
     }
+
+    @GetMapping("/alluser/get-review-by-book/{bookId}")
+    public ResponseEntity<List<Review>> getReviewsByBook(@PathVariable String bookId) {
+        return ResponseEntity.ok(reviewRepository.findByIsbn(bookId));
+    }
+
+    @GetMapping("/alluser/get-review-by-user/{email}")
+    public ResponseEntity<List<Review>> getReviewsByUser(@PathVariable String email) {
+        return ResponseEntity.ok(reviewRepository.findByEmail(email));
+    }
+
+    @GetMapping("/alluser/get-review-by-rating/{minRating}/{maxRating}")
+    public ResponseEntity<List<Review>> getReviewsByRating(@PathVariable BigDecimal minRating, @PathVariable BigDecimal maxRating) {
+        return ResponseEntity.ok(reviewRepository.findByRatingBetween(minRating, maxRating));
+    }
+
+    @DeleteMapping("/user/delete-review/{reviewId}")
+    public ResponseEntity<String> deleteReview(@PathVariable Integer reviewId) {
+        Review existingReview = reviewRepository.findById(reviewId).orElseThrow(() -> new RuntimeException("Review with id " + reviewId + " not found"));
+        reviewRepository.delete(existingReview);
+        return ResponseEntity.ok("Review with id " + reviewId + " deleted successfully");
+    }
+
+    @DeleteMapping("/librarian/delete-review/{reviewId}")
+    public ResponseEntity<String> deleteReviewLibrarian(@PathVariable Integer reviewId) {
+        Review existingReview = reviewRepository.findById(reviewId).orElseThrow(() -> new RuntimeException("Review with id " + reviewId + " not found"));
+        reviewRepository.delete(existingReview);
+        return ResponseEntity.ok("Review with id " + reviewId + " deleted successfully");
+    }
 }

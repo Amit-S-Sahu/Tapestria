@@ -11,5 +11,4 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
     List<Review> findByIsbn(String isbn);
     List<Review> findByEmail(String email);
     List<Review> findByRatingBetween(BigDecimal minRating, BigDecimal maxRating);
-    List<Review> findByReviewDateBetween(String startDate, String endDate);
 }
