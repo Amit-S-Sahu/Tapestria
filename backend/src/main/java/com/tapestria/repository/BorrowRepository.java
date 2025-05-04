@@ -1,5 +1,6 @@
 package com.tapestria.repository;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,4 +12,5 @@ public interface BorrowRepository extends JpaRepository<Borrow, Integer> {
     List<Borrow> findByIsbn(String isbn);
     List<Borrow> findByReturnDateIsNull();
     List<Borrow> findByReturnDateIsNullAndEmail(String email);
+    List<Borrow> findByReturnDateIsNullAndDueDateBefore(Date date);
 }

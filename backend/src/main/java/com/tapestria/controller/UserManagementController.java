@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tapestria.dto.ReqResp;
-import com.tapestria.model.User;
 import com.tapestria.service.UsersManagementService;
 
 
@@ -54,7 +53,7 @@ public class UserManagementController {
     }
 
     @PutMapping("/admin/enable-disable/{userId}")
-    public ResponseEntity<ReqResp> enableDisableUser(@PathVariable Integer userId, @RequestBody ReqResp enableDisableRequest) {
+    public ResponseEntity<ReqResp> enableDisableUser(@PathVariable Integer userId) {
         return ResponseEntity.ok(usersManagementService.toggleUserActive(userId));
     }
 
@@ -63,12 +62,12 @@ public class UserManagementController {
         return ResponseEntity.ok(usersManagementService.addLibrarianByAdmin(addLibrarianRequest));
     }
 
-    @PutMapping("/admin/update/{userId}")
-    public ResponseEntity<ReqResp> updateUser(@PathVariable Integer userId, @RequestBody User user) {
-        return ResponseEntity.ok(usersManagementService.updateUser(userId, user));
+    @PutMapping("/admin/update-user/{userId}")
+    public ResponseEntity<ReqResp> updateUser(@PathVariable Integer userId, @RequestBody ReqResp userUpdateRequest) {
+        return ResponseEntity.ok(usersManagementService.updateUser(userId, userUpdateRequest));
     }
 
-    @DeleteMapping("/admin/delete/{userId}")
+    @DeleteMapping("/admin/delete-user/{userId}")
     public ResponseEntity<ReqResp> deleteUser(@PathVariable Integer userId) {
         return ResponseEntity.ok(usersManagementService.deleteUser(userId));
     }

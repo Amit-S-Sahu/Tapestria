@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -55,6 +56,7 @@ public class BorrowManagementController { //!TODO: Add a fine to User entity, an
             book.returnBook();
             bookRepository.save(book);
             borrowBook.setReturnDate(new Date());
+            //!TODO: Calculate fine if any
             borrowRepository.save(borrowBook);
             return ResponseEntity.ok(borrowBook);
         } 
@@ -125,9 +127,39 @@ public class BorrowManagementController { //!TODO: Add a fine to User entity, an
         else return ResponseEntity.status(400).body(null);
     }
 
+    @GetMapping("librarian/get-borrowed-books-history")
+    public ResponseEntity<List<Borrow>> getBorrowedBooksHistory() {
+        List<Borrow> borrowedBooks = borrowRepository.findAll();
+        return ResponseEntity.ok(borrowedBooks);
+    }
+
+    @GetMapping("admin/get-borrowed-books-history")
+    public ResponseEntity<List<Borrow>> getAdminBorrowedBooksHistory() {
+        List<Borrow> borrowedBooks = borrowRepository.findAll();
+        return ResponseEntity.ok(borrowedBooks);
+    }
+
     @GetMapping("librarian/get-issued-books")
     public ResponseEntity<List<Borrow>> getIssuedBooks() {
         List<Borrow> issuedBooks = borrowRepository.findByReturnDateIsNull();
         return ResponseEntity.ok(issuedBooks);
+    }
+
+    @GetMapping("admin/get-issued-books")
+    public ResponseEntity<List<Borrow>> getAdminBorrowedBooks() {
+        List<Borrow> borrowedBooks = borrowRepository.findByReturnDateIsNull();
+        return ResponseEntity.ok(borrowedBooks);
+    }
+
+    @GetMapping("librarian/user-record/{email}")
+    public ResponseEntity<List<Borrow>> getUserRecord(@PathVariable String email) {
+        List<Borrow> userRecord = borrowRepository.findByEmail(email);
+        return ResponseEntity.ok(userRecord);
+    }
+
+    @GetMapping("librarian/get-overdue-books")
+    public ResponseEntity<List<Borrow>> getOverdueBooks() {
+        List<Borrow> overdueBooks = borrowRepository.findByReturnDateIsNullAndDueDateBefore(new Date());
+        return ResponseEntity.ok(overdueBooks);
     }
 }

@@ -1,5 +1,6 @@
 package com.tapestria.model;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
@@ -22,12 +23,14 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    private String username;
+    private String displayName;
     private String password;
     @Column(unique = true)
     private String email;
     private String role;
     private boolean enabled;
+    @Column(precision = 6, scale = 2)
+    private BigDecimal fineAmount;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

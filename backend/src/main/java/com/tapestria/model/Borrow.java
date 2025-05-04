@@ -1,5 +1,6 @@
 package com.tapestria.model;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -34,4 +35,6 @@ public class Borrow {
     @Temporal(TemporalType.TIMESTAMP)
     @JsonSerialize(using = JSONDataSerializer.class)
     Date dueDate;
+
+    private BigDecimal fineAmount;
 }

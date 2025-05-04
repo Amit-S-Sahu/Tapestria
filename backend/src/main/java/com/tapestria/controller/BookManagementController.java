@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,7 +35,7 @@ public class BookManagementController {
         return ResponseEntity.ok(bookRepository.findByAuthorContaining(authorId));
     }
 
-    @GetMapping("/alluser/get-book-by-genre/{genreId}")
+    @GetMapping("/alluser/get-book-by-genre/{genreId}") //! Fix genre segmentation by ,
     public ResponseEntity<List<Book>> getBooksByGenre(@PathVariable String genreId) {
         return ResponseEntity.ok(bookRepository.findByGenresContaining(genreId));
     }
@@ -57,7 +58,6 @@ public class BookManagementController {
         existingBook.setBookFormat(book.getBookFormat());
         existingBook.setDescription(book.getDescription());
         existingBook.setImageLink(book.getImageLink());
-        existingBook.setNumPages(book.getNumPages());
         existingBook.setRating(book.getRating());
         existingBook.setNumRatings(book.getNumRatings());
         existingBook.setGenres(book.getGenres());
@@ -70,4 +70,19 @@ public class BookManagementController {
         bookRepository.delete(existingBook);
         return ResponseEntity.ok("Book with id " + bookId + " deleted successfully");
     }
+
+    @PutMapping("/user/add-rating/{bookId}/{rating}")
+    public ResponseEntity<Book> addRating(@PathVariable String bookId, @PathVariable Integer rating) {
+        Book existingBook = bookRepository.findById(bookId).orElseThrow(() -> new RuntimeException("Book with id " + bookId + " not found"));
+        existingBook.addRating(Double.valueOf(rating));
+        return ResponseEntity.ok(bookRepository.save(existingBook));
+    }
+
+    // !Update after adding review functionality
+    // @PutMapping("/user/update-rating/{bookId}/{rating}")
+    // public ResponseEntity<Book> updateRating(@PathVariable String bookId, @PathVariable Integer rating) {
+    //     Book existingBook = bookRepository.findById(bookId).orElseThrow(() -> new RuntimeException("Book with id " + bookId + " not found"));
+    //     existingBook.setRating(existingBook.getRating().multiply(BigDecimal.valueOf(existingBook.getNumRatings())).add(BigDecimal.valueOf(rating)).divide(BigDecimal.valueOf(existingBook.getNumRatings() + 1), 2, BigDecimal.ROUND_HALF_UP));
+    //     return ResponseEntity.ok(bookRepository.save(existingBook));
+    // }
 }

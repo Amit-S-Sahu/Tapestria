@@ -10,4 +10,5 @@ import com.tapestria.model.User;
 public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByEmail(String email);
     List<User> findByRole(String role);
+    List<User> findByDisplayName(String displayName);
 }

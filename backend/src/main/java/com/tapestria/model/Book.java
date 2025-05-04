@@ -24,12 +24,11 @@ public class Book { //!TODO: Add review functionality by creating a new entity R
     String description;
     @Column(name = "img")
     String imageLink;
-    @Column(name = "pages")
-    Integer numPages;
     @Column(precision = 4, scale = 2)
     BigDecimal rating;
     @Column(name = "totalratings")
     Integer numRatings;
+    @Column(name = "genre")
     String genres;
     @Column(name = "numcopies")
     Integer numBooks;
@@ -47,15 +46,14 @@ public class Book { //!TODO: Add review functionality by creating a new entity R
     }
 
     public void addRating(Double newRating) {
-    BigDecimal newRatingBD = BigDecimal.valueOf(newRating).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal newRatingBD = BigDecimal.valueOf(newRating).setScale(2, RoundingMode.HALF_UP);
 
-    if (this.numRatings == 0) this.rating = newRatingBD;
-    else {
-        BigDecimal total = this.rating.multiply(BigDecimal.valueOf(this.numRatings))
-                                    .add(newRatingBD);
-        this.rating = total.divide(BigDecimal.valueOf(this.numRatings + 1), 2, RoundingMode.HALF_UP);
+        if (this.numRatings == 0) this.rating = newRatingBD;
+        else {
+            BigDecimal total = this.rating.multiply(BigDecimal.valueOf(this.numRatings))
+                                        .add(newRatingBD);
+            this.rating = total.divide(BigDecimal.valueOf(this.numRatings + 1), 2, RoundingMode.HALF_UP);
+        }
+        this.numRatings++;
     }
-    this.numRatings++;
-}
-
 }

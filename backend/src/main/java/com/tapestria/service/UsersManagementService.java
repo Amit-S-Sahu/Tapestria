@@ -41,7 +41,7 @@ public class UsersManagementService {
             User user = new User();
             user.setEmail(registrationRequest.getEmail());
             user.setRole(registrationRequest.getRole());
-            user.setUsername(registrationRequest.getUsername());
+            user.setDisplayName(registrationRequest.getDisplayName());
             user.setPassword(passwordEncoder.encode(registrationRequest.getPassword()));
             user.setEnabled(true);
             User userResult = userRepository.save(user);
@@ -188,6 +188,27 @@ public class UsersManagementService {
         return resp;
     }
 
+    public ReqResp getUsersByUsername(String displayName) {
+        ReqResp resp = new ReqResp();
+        try {
+            List<User> usersByUsername = userRepository.findByDisplayName(displayName);
+            if (!usersByUsername.isEmpty()) {
+                resp.setUserList(usersByUsername);
+                resp.setStatusCode(200);
+                resp.setMessage("Users with username '" + displayName + "' found successfully");
+            } 
+            else {
+                resp.setStatusCode(404);
+                resp.setMessage("No users found with username '" + displayName + "'");
+            }
+        } 
+        catch (Exception e) {
+            resp.setStatusCode(500);
+            resp.setMessage(e.getMessage());
+        }
+        return resp;
+    }
+
     public ReqResp getUsersByRole(String role) {
         ReqResp resp = new ReqResp();
         try {
@@ -230,20 +251,31 @@ public class UsersManagementService {
         return resp;
     }
 
-    public ReqResp updateUser(Integer userId, User updatedUser) {
+    public ReqResp updateUser(Integer userId, ReqResp updatedUser) {
         ReqResp resp = new ReqResp();
         try {
             Optional<User> userOptional = userRepository.findById(userId);
             if (userOptional.isPresent()) {
                 User existingUser = userOptional.get();
-                existingUser.setEmail(updatedUser.getEmail());
-                existingUser.setUsername(updatedUser.getUsername());
-                existingUser.setRole(updatedUser.getRole());
-
-                if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) {
-                    existingUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+    
+                String newEmail = updatedUser.getEmail();
+                if (newEmail != null && !newEmail.equals(existingUser.getEmail())) {
+                    Optional<User> emailConflict = userRepository.findByEmail(newEmail);
+                    if (emailConflict.isPresent()) {
+                        resp.setStatusCode(400);
+                        resp.setMessage("Email already in use by another user");
+                        return resp;
+                    }
+                    existingUser.setEmail(newEmail);
                 }
-
+    
+                if (updatedUser.getDisplayName() != null) existingUser.setDisplayName(updatedUser.getDisplayName());
+    
+                if (updatedUser.getRole() != null) existingUser.setRole(updatedUser.getRole());
+    
+                String pwd = updatedUser.getPassword();
+                if (pwd != null && !pwd.trim().isEmpty()) existingUser.setPassword(passwordEncoder.encode(pwd));
+    
                 User savedUser = userRepository.save(existingUser);
                 resp.setUser(savedUser);
                 resp.setStatusCode(200);
@@ -260,6 +292,7 @@ public class UsersManagementService {
         }
         return resp;
     }
+    
 
     public ReqResp addLibrarianByAdmin(ReqResp addLibrarianRequest) {
         ReqResp resp = new ReqResp();
@@ -274,7 +307,7 @@ public class UsersManagementService {
             User user = new User();
             user.setEmail(addLibrarianRequest.getEmail());
             user.setRole("LIBRARIAN");
-            user.setUsername(addLibrarianRequest.getUsername());
+            user.setDisplayName(addLibrarianRequest.getDisplayName());
             user.setPassword(passwordEncoder.encode(addLibrarianRequest.getPassword()));
             user.setEnabled(true);
             User userResult = userRepository.save(user);
