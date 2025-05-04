@@ -92,6 +92,7 @@ public class UsersManagementService {
                 resp.setToken(jwt);
                 resp.setRefreshToken(refreshTokenRequest.getToken());
                 resp.setExpirationTime("24Hrs");
+                resp.setRole(users.getRole());
                 resp.setMessage("Successfully Refreshed Token");
             }
             // resp.setStatusCode(200);
