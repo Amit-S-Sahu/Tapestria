@@ -21,6 +21,9 @@ public class FineService {
     @Autowired
     private BorrowRepository borrowRepository;
 
+    @Autowired
+    private EmailService emailService;
+
     @Scheduled(cron = "0 0 0 * * ?")
     public void calculateFines() {
         List<Borrow> overdueBorrows = borrowRepository.findByReturnDateIsNullAndDueDateBefore(new Date());
@@ -48,5 +51,62 @@ public class FineService {
         long diffInDays = diffInMillies / (1000 * 60 * 60 * 24);
         if (diffInDays <= 0) return BigDecimal.ZERO;
         return BigDecimal.valueOf(diffInDays).multiply(new BigDecimal("5.00"));
+    }
+
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void sendEmailReminders() {
+        Date today = new Date();
+        Date tomorrow = new Date(today.getTime() + 86400000);
+        Date yesterday = new Date(today.getTime() - 86400000);
+
+        List<Borrow> dueTomorrow = borrowRepository.findByReturnDateIsNullAndDueDate(tomorrow);
+        List<Borrow> overdue = borrowRepository.findByReturnDateIsNullAndDueDate(yesterday);
+        List<Borrow> dueToday = borrowRepository.findByReturnDateIsNullAndDueDate(today);
+
+        for (Borrow borrow : dueTomorrow) {
+            User user = userRepository.findByEmail(borrow.getEmail()).orElse(null);
+            if (user != null) {
+                String subject = "Book Due Tomorrow";
+                String message = "Dear " + user.getDisplayName() + ",\n\nYour borrowed book is due tomorrow. Please return it on time.\n\nThank you!";
+                emailService.sendEmail(user.getEmail(), subject, message);
+            }
+        }
+
+        for (Borrow borrow : overdue) {
+            User user = userRepository.findByEmail(borrow.getEmail()).orElse(null);
+            if (user != null) {
+                String subject = "Book Overdue";
+                String message = "Dear " + user.getDisplayName() + ",\n\nYour borrowed book is overdue. Please return it as soon as possible.\n\nThank you!";
+                emailService.sendEmail(user.getEmail(), subject, message);
+            }
+        }
+
+        for (Borrow borrow : dueToday) {
+            User user = userRepository.findByEmail(borrow.getEmail()).orElse(null);
+            if (user != null) {
+                String subject = "Book Due Today";
+                String message = "Dear " + user.getDisplayName() + ",\n\nYour borrowed book is due today. Please return it on time.\n\nThank you!";
+                emailService.sendEmail(user.getEmail(), subject, message);
+            }
+        }
+
+        List<User> usersWithFine = userRepository.findByTotalFineGreaterThan(new BigDecimal("100.00"));
+        for (User user : usersWithFine) {
+            String subject = "Outstanding Fine Reminder";
+            String message = "Dear " + user.getDisplayName() + ",\n\nYou have an outstanding fine of " + user.getTotalFine() + ". Please clear it at your earliest convenience.\n\nThank you!";
+            emailService.sendEmail(user.getEmail(), subject, message);
+        }
+
+        List<User> usersWithLibrarianRole = userRepository.findByRole("LIBRARIAN");
+        List<Borrow> overdueBorrows = borrowRepository.findByReturnDateIsNullAndDueDate(yesterday);
+        for (User user : usersWithLibrarianRole) {
+            String subject = "Books Due Yesterday";
+            String message = "Dear " + user.getDisplayName() + ",\n\nThe following books were due yesterday:\n";
+            for (Borrow borrow : overdueBorrows) {
+                message += "- " + borrow.getIsbn() + "\n" + "  Borrowed by: " + borrow.getEmail() + "\n";
+            }
+            message += "\nPlease follow up with the respective users.\n\nThank you!";
+            emailService.sendEmail(user.getEmail(), subject, message);
+        }
     }
 }
