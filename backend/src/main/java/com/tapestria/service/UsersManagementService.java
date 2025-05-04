@@ -70,6 +70,7 @@ public class UsersManagementService {
             resp.setStatusCode(200);
             resp.setToken(jwt);
             resp.setRefreshToken(refreshToken);
+            resp.setRole(user.getRole());
             resp.setExpirationTime("24Hrs");
             resp.setMessage("User logged in successfully");
         }
@@ -92,7 +93,6 @@ public class UsersManagementService {
                 resp.setToken(jwt);
                 resp.setRefreshToken(refreshTokenRequest.getToken());
                 resp.setExpirationTime("24Hrs");
-                resp.setRole(users.getRole());
                 resp.setMessage("Successfully Refreshed Token");
             }
             // resp.setStatusCode(200);
