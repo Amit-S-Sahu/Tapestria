@@ -14,4 +14,5 @@ public interface BorrowRepository extends JpaRepository<Borrow, Integer> {
     List<Borrow> findByReturnDateIsNullAndEmail(String email);
     List<Borrow> findByReturnDateIsNullAndDueDateBefore(Date date);
     List<Borrow> findByReturnDateIsNullAndDueDate(Date date);
+    List<Borrow> findByReturnDateIsNullAndDueDateBeforeAndEmail(Date date, String email);
 }

@@ -21,7 +21,7 @@ import com.tapestria.repository.BorrowRepository;
 import com.tapestria.repository.UserRepository;
 
 @RestController
-public class BorrowManagementController { //!TODO: Add a fine to User entity, and add a method to calculate the fine when returning a book.
+public class BorrowManagementController {
     @Autowired
     private BorrowRepository borrowRepository;
 
@@ -166,5 +166,24 @@ public class BorrowManagementController { //!TODO: Add a fine to User entity, an
     public ResponseEntity<List<Borrow>> getOverdueBooks() {
         List<Borrow> overdueBooks = borrowRepository.findByReturnDateIsNullAndDueDateBefore(new Date());
         return ResponseEntity.ok(overdueBooks);
+    }
+
+    @GetMapping("alluser/notification")
+    public ResponseEntity<List<Borrow>> getNotification() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        switch (user.getRole()) {
+            case "LIBRARIAN" -> {
+                List<Borrow> overdueBooks = borrowRepository.findByReturnDateIsNullAndDueDateBefore(new Date());
+                return ResponseEntity.ok(overdueBooks);
+            }
+            case "USER" -> {
+                List<Borrow> overdueBooks = borrowRepository.findByReturnDateIsNullAndDueDateBeforeAndEmail(new Date(), email);
+                return ResponseEntity.ok(overdueBooks);
+            }
+            default -> {
+                return ResponseEntity.status(400).body(null);
+            }
+        }
     }
 }
