@@ -1,5 +1,6 @@
 package com.tapestria.repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,4 +12,5 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByEmail(String email);
     List<User> findByRole(String role);
     List<User> findByDisplayName(String displayName);
+    List<User> findByFineAmountIsGreaterThan(BigDecimal fineAmount);
 }

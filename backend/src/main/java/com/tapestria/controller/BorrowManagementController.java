@@ -56,7 +56,6 @@ public class BorrowManagementController { //!TODO: Add a fine to User entity, an
             book.returnBook();
             bookRepository.save(book);
             borrowBook.setReturnDate(new Date());
-            //!TODO: Calculate fine if any
             borrowRepository.save(borrowBook);
             return ResponseEntity.ok(borrowBook);
         } 
@@ -149,6 +148,12 @@ public class BorrowManagementController { //!TODO: Add a fine to User entity, an
     public ResponseEntity<List<Borrow>> getAdminBorrowedBooks() {
         List<Borrow> borrowedBooks = borrowRepository.findByReturnDateIsNull();
         return ResponseEntity.ok(borrowedBooks);
+    }
+
+    @GetMapping("admin/get-available-books")
+    public ResponseEntity<List<Book>> getAvailableBooks() {
+        List<Book> availableBooks = bookRepository.findByNumBooksGreaterThan(0);
+        return ResponseEntity.ok(availableBooks);
     }
 
     @GetMapping("librarian/user-record/{email}")

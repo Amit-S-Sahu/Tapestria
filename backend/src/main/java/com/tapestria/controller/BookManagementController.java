@@ -1,28 +1,46 @@
 package com.tapestria.controller;
 
+import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tapestria.model.Book;
+import com.tapestria.model.Review;
+import com.tapestria.model.User;
 import com.tapestria.repository.BookRepository;
+import com.tapestria.repository.ReviewRepository;
+import com.tapestria.repository.UserRepository;
 
 @RestController
 public class BookManagementController {
     @Autowired
     private BookRepository bookRepository;
 
+    @Autowired
+    private ReviewRepository reviewRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
     @GetMapping("/alluser/get-all-books")
     public ResponseEntity<List<Book>> getAllBooks() {
         return ResponseEntity.ok(bookRepository.findAll());
+    }
+
+    @GetMapping("/alluser/check-availability/{bookId}")
+    public ResponseEntity<String> checkAvailability(@PathVariable String bookId) {
+        Book book = bookRepository.findById(bookId).orElseThrow(() -> new RuntimeException("Book with id " + bookId + " not found"));
+        return ResponseEntity.ok(book.isAvailable() ? "Available" : "Not Available");
     }
 
     @GetMapping("/alluser/get-book-by-id/{bookId}")
@@ -35,7 +53,7 @@ public class BookManagementController {
         return ResponseEntity.ok(bookRepository.findByAuthorContaining(authorId));
     }
 
-    @GetMapping("/alluser/get-book-by-genre/{genreId}") //! Fix genre segmentation by ,
+    @GetMapping("/alluser/get-book-by-genre/{genreId}")
     public ResponseEntity<List<Book>> getBooksByGenre(@PathVariable String genreId) {
         return ResponseEntity.ok(bookRepository.findByGenresContaining(genreId));
     }
@@ -71,18 +89,31 @@ public class BookManagementController {
         return ResponseEntity.ok("Book with id " + bookId + " deleted successfully");
     }
 
-    @PutMapping("/user/add-rating/{bookId}/{rating}")
+    @PostMapping("/user/add-rating/{bookId}/{rating}")
     public ResponseEntity<Book> addRating(@PathVariable String bookId, @PathVariable Integer rating) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
         Book existingBook = bookRepository.findById(bookId).orElseThrow(() -> new RuntimeException("Book with id " + bookId + " not found"));
         existingBook.addRating(Double.valueOf(rating));
+
+        Review review = new Review();
+        review.setIsbn(bookId);
+        review.setEmail(email);
+        review.setRating(BigDecimal.valueOf(rating));
+        review.setReviewDate(new Date());
+
+        reviewRepository.save(review);
         return ResponseEntity.ok(bookRepository.save(existingBook));
     }
 
-    // !Update after adding review functionality
-    // @PutMapping("/user/update-rating/{bookId}/{rating}")
-    // public ResponseEntity<Book> updateRating(@PathVariable String bookId, @PathVariable Integer rating) {
-    //     Book existingBook = bookRepository.findById(bookId).orElseThrow(() -> new RuntimeException("Book with id " + bookId + " not found"));
-    //     existingBook.setRating(existingBook.getRating().multiply(BigDecimal.valueOf(existingBook.getNumRatings())).add(BigDecimal.valueOf(rating)).divide(BigDecimal.valueOf(existingBook.getNumRatings() + 1), 2, BigDecimal.ROUND_HALF_UP));
-    //     return ResponseEntity.ok(bookRepository.save(existingBook));
-    // }
+    @PostMapping("/user/add-review/{bookId}")
+    public ResponseEntity<Review> addReview(@PathVariable String bookId, @RequestBody Review review) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        Book existingBook = bookRepository.findById(bookId).orElseThrow(() -> new RuntimeException("Book with id " + bookId + " not found"));
+        review.setIsbn(bookId);
+        review.setEmail(email);
+        review.setReviewDate(new Date());
+        return ResponseEntity.ok(reviewRepository.save(review));
+    }
 }

@@ -30,7 +30,7 @@ public class User implements UserDetails {
     private String role;
     private boolean enabled;
     @Column(precision = 6, scale = 2)
-    private BigDecimal fineAmount;
+    private BigDecimal totalFine;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

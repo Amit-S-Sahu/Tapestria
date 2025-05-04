@@ -12,7 +12,7 @@ import lombok.Data;
 @Entity
 @Table(name = "books")
 @Data
-public class Book { //!TODO: Add review functionality by creating a new entity Review, and having isbn, and userId as composite key, then add a list of reviews to the book entity. 
+public class Book {
     @Id
     @Column(unique = true)
     String isbn;
@@ -24,7 +24,7 @@ public class Book { //!TODO: Add review functionality by creating a new entity R
     String description;
     @Column(name = "img")
     String imageLink;
-    @Column(precision = 4, scale = 2)
+    @Column(precision = 3, scale = 2)
     BigDecimal rating;
     @Column(name = "totalratings")
     Integer numRatings;

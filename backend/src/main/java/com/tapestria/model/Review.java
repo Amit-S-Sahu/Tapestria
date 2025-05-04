@@ -5,6 +5,7 @@ import java.util.Date;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,27 +16,18 @@ import jakarta.persistence.TemporalType;
 import lombok.Data;
 
 @Entity
-@Table(name = "borrows")
+@Table(name = "reviews")
 @Data
-public class Borrow {
+public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Integer borrowId;
+    Integer reviewId;
     String isbn;
     String email;
-
+    @Column(precision = 3, scale = 2)
+    BigDecimal rating;
+    String reviewText;
     @Temporal(TemporalType.TIMESTAMP)
     @JsonSerialize(using = JSONDataSerializer.class)
-    Date issueDate;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    @JsonSerialize(using = JSONDataSerializer.class)
-    Date returnDate;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    @JsonSerialize(using = JSONDataSerializer.class)
-    Date dueDate;
-
-    BigDecimal fineAmount;
-    //! add a status field to the borrow entity, to implement monthly fines.
+    Date reviewDate;
 }
