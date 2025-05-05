@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,9 +34,9 @@ public class BookManagementController {
     @Autowired
     private UserRepository userRepository;
 
-    @GetMapping("/alluser/get-all-books")
-    public ResponseEntity<List<Book>> getAllBooks() {
-        return ResponseEntity.ok(bookRepository.findAll());
+    @GetMapping("/alluser/get-all-books/{limit}")
+    public ResponseEntity<Page<Book>> getAllBooks(@PathVariable int limit) {
+        return ResponseEntity.ok(bookRepository.findAll(PageRequest.of(0, limit)));
     }
 
     @GetMapping("/alluser/check-availability/{bookId}")
