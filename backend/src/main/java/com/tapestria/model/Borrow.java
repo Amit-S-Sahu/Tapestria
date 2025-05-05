@@ -37,5 +37,4 @@ public class Borrow {
     Date dueDate;
 
     BigDecimal fineAmount;
-    //! add a status field to the borrow entity, to implement monthly fines.
 }

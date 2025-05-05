@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Pink-red theme from the reference image */
+  --background: 0 0% 100%;
+  --foreground: 0 0% 10%;
+  --muted: 330 6% 97%;
+  --muted-foreground: 0 0% 45%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 10%;
+  --border: 330 6% 90%;
+  --input: 330 6% 90%;
+  --primary: 338 76% 55%; /* Pink-red from image */
+  --primary-foreground: 0 0% 98%;
+  --secondary: 330 6% 96%;
+  --secondary-foreground: 0 0% 10%;
+  --accent: 338 76% 95%; /* Light pink */
+  --accent-foreground: 338 76% 40%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --ring: 338 76% 55%;
+  --radius: 0.5rem;
+}
+
+.dark {
+  /* Dark theme from the reference image */
+  --background: 222 47% 11%; /* Dark blue-gray background */
+  --foreground: 0 0% 98%;
+  --muted: 223 47% 20%;
+  --muted-foreground: 0 0% 65%;
+  --popover: 222 47% 11%;
+  --popover-foreground: 0 0% 98%;
+  --card: 222 47% 15%; /* Slightly lighter cards */
+  --card-foreground: 0 0% 98%;
+  --border: 223 47% 20%;
+  --input: 223 47% 20%;
+  --primary: 338 76% 55%; /* Same pink-red for consistency */
+  --primary-foreground: 0 0% 98%;
+  --secondary: 223 47% 20%;
+  --secondary-foreground: 0 0% 98%;
+  --accent: 338 76% 40%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 63% 31%;
+  --destructive-foreground: 0 0% 98%;
+  --ring: 0 0% 83%;
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
