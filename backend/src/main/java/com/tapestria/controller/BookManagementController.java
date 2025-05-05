@@ -39,6 +39,11 @@ public class BookManagementController {
         return ResponseEntity.ok(bookRepository.findAll(PageRequest.of(0, limit)));
     }
 
+    @GetMapping("alluser/get-total-books")
+    public ResponseEntity<Long> getTotalBooks() {
+        return ResponseEntity.ok(bookRepository.count());
+    }
+
     @GetMapping("/alluser/check-availability/{bookId}")
     public ResponseEntity<String> checkAvailability(@PathVariable String bookId) {
         Book book = bookRepository.findById(bookId).orElseThrow(() -> new RuntimeException("Book with id " + bookId + " not found"));
