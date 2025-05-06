@@ -101,6 +101,7 @@ public class BorrowManagementController {
 
     @PostMapping("librarian/issue-book")
     public ResponseEntity<Borrow> issueBook(@RequestBody Borrow borrow) {
+        User user = userRepository.findByEmail(borrow.getEmail()).orElseThrow(() -> new RuntimeException("User not found"));
         Book book = bookRepository.findById(borrow.getIsbn()).orElseThrow(() -> new RuntimeException("Book not found"));
         if (book.isAvailable()) {
             book.borrowBook();
@@ -115,6 +116,7 @@ public class BorrowManagementController {
 
     @PostMapping("librarian/return-book")
     public ResponseEntity<Borrow> returnBookLibrarian(@RequestBody Borrow borrow) {
+        User user = userRepository.findByEmail(borrow.getEmail()).orElseThrow(() -> new RuntimeException("User not found"));
         Borrow borrowBook = borrowRepository.findById(borrow.getBorrowId()).orElseThrow(() -> new RuntimeException("Borrow record not found"));
         Book book = bookRepository.findById(borrowBook.getIsbn()).orElseThrow(() -> new RuntimeException("Book not found"));
 
