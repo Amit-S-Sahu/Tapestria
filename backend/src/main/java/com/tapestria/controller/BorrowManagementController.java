@@ -33,12 +33,14 @@ public class BorrowManagementController {
 
     @PostMapping("user/borrow-book")
     public ResponseEntity<Borrow> borrowBook(@RequestBody Borrow borrow) {
-        User user = userRepository.findByEmail(borrow.getEmail()).orElseThrow(() -> new RuntimeException("User not found"));
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
         Book book = bookRepository.findById(borrow.getIsbn()).orElseThrow(() -> new RuntimeException("Book not found"));
 
         if (book.isAvailable()) {
             book.borrowBook();
             bookRepository.save(book);
+            borrow.setEmail(email);
             borrow.setIssueDate(new Date());
             borrow.setDueDate(new Date(System.currentTimeMillis() + 604800000));
             borrowRepository.save(borrow);
