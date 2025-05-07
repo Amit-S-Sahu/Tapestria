@@ -16,4 +16,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("SELECT u.email FROM User u WHERE u.role = 'LIBRARIAN'")
     List<String> findAllLibrarianEmails();
     List<User> findByTotalFineGreaterThan(BigDecimal totalFine);
+    @Query("SELECT COALESCE(SUM(u.totalFine), 0) FROM User u")
+    BigDecimal sumTotalFines();
 }

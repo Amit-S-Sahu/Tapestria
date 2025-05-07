@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tapestria.model.User;
-import com.tapestria.repository.BookRepository;
-import com.tapestria.repository.BorrowRepository;
 import com.tapestria.repository.UserRepository;
 
 @RestController
@@ -44,11 +42,9 @@ public class FineManagementController {
 
     @GetMapping("admin/total-fine")
     public ResponseEntity<BigDecimal> getAllTotalFines() {
-        BigDecimal totalFine = userRepository.findAll().stream()
-                .map(User::getTotalFine)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        return ResponseEntity.ok(totalFine);
+        return ResponseEntity.ok(userRepository.sumTotalFines());
     }
+    
 
     @PutMapping("admin/fine/{userId}/pay-fine")
     public ResponseEntity<String> payUserFine(@PathVariable Integer userId) {
