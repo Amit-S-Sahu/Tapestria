@@ -19,15 +19,21 @@ const LibrarianDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [bookCount, setBookCount] = useState<number | null>(null);
 
+  // // Fetch all books
+  // const { data: books } = useQuery({
+  //   queryKey: ["/alluser/get-all-books"],
+  //   enabled: !!user && user.role === "librarian"
+  // });
+
   const {  data: books, isLoading: isBooksLoading, error: booksError  } = useQuery({
     queryKey: ["/alluser/get-all-books"],
+    // enabled: !!user && user.role.toLowerCase() === "librarian",
     enabled: true,
     queryFn: async () => {
       try {
-        console.log("Fetching books..."); 
         const token = localStorage.getItem("authToken");
         if (!token) throw new Error("No authorization token found");
-        console.log("Fetching books with token:", token); 
+        console.log("Fetching books with token:", token); // Debugging line
         const response = await fetch("http://127.0.0.1:8080/alluser/get-all-books/12", {
           method: "GET",
           headers: {
@@ -35,6 +41,7 @@ const LibrarianDashboard = () => {
           },
         });
     
+        // console.log("Response status:", response.status);
         const data = await response.json();
         if (response.statusCode !== 200) {
           throw new Error(data.message || "Failed to fetch books");
@@ -43,7 +50,7 @@ const LibrarianDashboard = () => {
         return data.content;
       } catch (error) {
         console.error("Query error:", error);
-        throw error;
+        throw error; // rethrow for react-query to catch
       }
     },
   });
@@ -59,33 +66,94 @@ const LibrarianDashboard = () => {
           },
         });
         const data = await response.json();
-        setBookCount(data); 
+        setBookCount(data); // Assuming the response contains totalBooks
       } catch (error) {
-        console.error('Error fetching book count:', error);
-        setBookCount(null); 
+        setBookCount(null); // Or you can set to 0 if you prefer
       }
     };
   
     fetchBookCount();
   }, []);
   
-  console.log("Books data:", books); 
 
-  const { data: activeBorrowings } = useQuery({
+  // Fetch active borrowings
+  async function fetchIssuedBooks(): Promise<Borrow[]> {
+    const res = await fetch(
+      "http://127.0.0.1:8080/librarian/get-issued-books",
+      {
+        method: "GET",
+        headers: getAuthHeaders(),
+      }
+    );
+    if (!res.ok) {
+      const txt = await res.text();
+      throw new Error(`Error ${res.status}: ${txt}`);
+    }
+    return res.json();
+  }
+
+  // 3. React-Query hook (only for librarians)
+  const {
+    data: activeBorrowings,
+    isLoading: isLoadingActive,
+    error: activeError,
+  } = useQuery<Borrow[]>({
     queryKey: ["/api/borrowings/active"],
-    enabled: !!user && user.role === "librarian"
+    queryFn: fetchIssuedBooks,
+    enabled: user?.role === "librarian",
+    retry: 1,
   });
 
-  const { data: overdueBorrowings } = useQuery({
+
+  // Fetch overdue borrowings
+// 1. Auth header helper
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) throw new Error("No auth token found");
+    return {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
+  };
+
+  // 2. Fetcher for overdue books
+  async function fetchOverdueBooks(): Promise<Borrow[]> {
+    const res = await fetch(
+      "http://127.0.0.1:8080/librarian/get-overdue-books",
+      {
+        method: "GET",
+        headers: getAuthHeaders(),
+      }
+    );
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Error ${res.status}: ${text}`);
+    }
+
+    console.log("Overdue books response:", res); // Debugging line
+
+    return res.json();
+  }
+
+  // 3. React-Query hook (only enabled for librarians)
+  const { 
+    data: overdueBorrowings, 
+    isLoading: isLoadingOverdue, 
+    error: overdueError 
+  } = useQuery<Borrow[]>({
     queryKey: ["/api/borrowings/overdue"],
-    enabled: !!user && user.role === "librarian"
+    queryFn: fetchOverdueBooks,
+    enabled: user?.role === "librarian",  // only fetch if the user is a librarian
+    retry: 1,
   });
 
+  // Fetch book requests
   const { data: bookRequests } = useQuery({
     queryKey: ["/api/book-requests"],
     enabled: !!user && user.role === "librarian"
   });
 
+  // Fetch notifications
   const { data: notifications } = useQuery({
     queryKey: ["/api/notifications"],
     enabled: !!user
@@ -105,10 +173,11 @@ const LibrarianDashboard = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <StatsCard 
           title="Total Books"
-          value={bookCount !== null ? bookCount : "—"}
+          // value={books?.length || 0}
+          value={bookCount !== null ? bookCount : "—"} // Shows placeholder until loaded
           icon={<BookOpen className="h-5 w-5" />}
           description="In the library collection"
           className="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
@@ -128,14 +197,6 @@ const LibrarianDashboard = () => {
           icon={<AlertTriangle className="h-5 w-5" />}
           description="Past the due date"
           className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400"
-        />
-        
-        <StatsCard 
-          title="Book Requests"
-          value={bookRequests?.filter(r => r.status === "pending").length || 0}
-          icon={<Clock className="h-5 w-5" />}
-          description="Pending approvals"
-          className="bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400"
         />
       </div>
 
@@ -165,16 +226,10 @@ const LibrarianDashboard = () => {
                       <span>Issue Books</span>
                     </div>
                   </Link>
-                  <Link href="/librarian/return" className="w-full">
+                  <Link href="/librarian/return" className="w-full col-span-2">
                     <div className="h-24 flex flex-col items-center justify-center gap-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-md px-4 py-2 w-full">
                       <RotateCcw className="h-5 w-5" />
                       <span>Return Books</span>
-                    </div>
-                  </Link>
-                  <Link href="/librarian/manage-users" className="w-full">
-                    <div className="h-24 flex flex-col items-center justify-center gap-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-md px-4 py-2 w-full">
-                      <UserCheck className="h-5 w-5" />
-                      <span>Manage Users</span>
                     </div>
                   </Link>
                 </div>
@@ -196,7 +251,7 @@ const LibrarianDashboard = () => {
                       <div>
                         <p className="text-sm font-medium">{borrowing.book?.title}</p>
                         <p className="text-xs text-slate-500 dark:text-slate-400">
-                          Borrowed by: {borrowing.user?.name} • 
+                          Borrowed by: {borrowing.user} • 
                           Due: {new Date(borrowing.dueDate).toLocaleDateString()}
                         </p>
                       </div>
@@ -212,39 +267,6 @@ const LibrarianDashboard = () => {
               </CardContent>
             </Card>
           </div>
-          
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Book Requests</h3>
-                <Button variant="ghost" size="sm">View All</Button>
-              </div>
-              <div className="space-y-4">
-                {bookRequests?.filter(r => r.status === "pending").slice(0, 3).map((request) => (
-                  <div key={request.id} className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-md">
-                    <Clock className="h-5 w-5 text-primary flex-shrink-0 mt-1" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{request.title}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        Requested by: {request.user?.name} •
-                        Date: {new Date(request.requestDate).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline" className="h-8 text-xs px-2">Approve</Button>
-                      <Button size="sm" variant="outline" className="h-8 text-xs px-2 text-destructive">Reject</Button>
-                    </div>
-                  </div>
-                ))}
-                
-                {(!bookRequests || bookRequests.filter(r => r.status === "pending").length === 0) && (
-                  <div className="text-center py-6 text-sm text-slate-500 dark:text-slate-400">
-                    No pending book requests
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
         </TabsContent>
         
         <TabsContent value="notifications">

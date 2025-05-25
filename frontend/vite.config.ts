@@ -6,7 +6,7 @@ import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 export default defineConfig({
   server: {
     host: "0.0.0.0",
-    port: 5000,
+    port: 3000,
     allowedHosts: [
       "86f7efc8-dff8-47de-8cd8-0672ad32cadc-00-345g75lofdety.sisko.replit.dev",
     ],

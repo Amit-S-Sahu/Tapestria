@@ -9,7 +9,7 @@ export const loginSchema = z.object({
 });
 
 export const registerSchema = z.object({
-  username: z.string().min(1, "Username is required"),
+  // username: z.string().min(1, "Username is required"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   role: z.enum(["student", "librarian", "admin"]),
   name: z.string().min(1, "Full name is required"),
@@ -21,7 +21,7 @@ export type RegisterData = z.infer<typeof registerSchema>;
 
 type User = {
   id: number;
-  username: string;
+  // username: string;
   role: string;
   name: string;
   email: string;
@@ -38,96 +38,90 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+// API functions
 const loginApi = async (data: LoginData): Promise<User> => {
-  try {
-    const response = await fetch('http://localhost:8080/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: data.username,
-        password: data.password
-      }),
-    });
+  const response = await fetch('http://localhost:8080/auth/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      email: data.username,
+      password: data.password,
+    }),
+  });
 
-    if (!response.ok) {
-      throw new Error('Login failed');
-    }
+  const result = await response.json();
 
-    const result = await response.json();
-    
-    if (result.statusCode === 200) {
-      localStorage.setItem("authToken", result.token);
-      localStorage.setItem("refreshToken", result.refreshToken);
-      
-      const role = result.role?.toLowerCase() || 'student';
-      
-      return {
-        id: 1, 
-        username: data.username,
-        role: role, 
-        name: result.name || "User", 
-        email: data.username,
-        active: true
-      };
-    } else {
-      throw new Error(result.message || 'Login failed');
-    }
-  } catch (error) {
-    console.error('Login error:', error);
-    
-    const path = window.location.pathname;
-    let role = "student";
-    
-    if (path.includes('/admin')) {
-      role = "admin";
-    } else if (path.includes('/librarian')) {
-      role = "librarian";
-    } else if (path.includes('/student')) {
-      role = "student";
-    } else if (data.username.includes("admin")) {
-      role = "admin";
-    } else if (data.username.includes("librarian")) {
-      role = "librarian";
-    }
-    
-    return {
-      id: 1,
-      username: data.username,
-      role: role,
-      name: "Test User",
-      email: "test@example.com",
-      active: true
-    };
+  // console.log("Login result:", result);
+  if (!response.ok || result.statusCode !== 200) {
+    throw new Error(result.message || 'Login failed');
   }
-};
 
-const registerApi = async (data: RegisterData): Promise<User> => {
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
+  // Save tokens
+  localStorage.setItem("authToken", result.token);
+  localStorage.setItem("refreshToken", result.refreshToken);
+
+
   return {
-    id: 1,
-    username: data.username,
-    role: data.role,
-    name: data.name,
-    email: data.email,
-    active: true
+    id: result.user?.id || 1,
+    // username: result.user?.username || data.username,
+    role: result.role?.toLowerCase() == "user" ? "student" : result.role?.toLowerCase(),
+    name: result.user?.displayName || "User",
+    email: result.user?.email || data.username,
+    active: result.user?.enabled ?? true,
   };
 };
 
+const registerApi = async (data: RegisterData): Promise<User> => {
+  const res = await fetch("http://127.0.0.1:8080/auth/register", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email: data.email,
+      displayName: data.name,
+      password: data.password,
+      role: data.role.toLowerCase() === "student" ? "USER" : data.role.toUpperCase(),
+    }),
+  });
+
+  const result = await res.json();
+
+  if (!res.ok || result.statusCode !== 200) {
+    throw new Error(result.message || "Registration failed");
+  }
+
+  return {
+    id: result.user.id,
+    // username: result.user.username,
+    role: result.user.role.toLowerCase() === "user" ? "student" : result.user.role.toLowerCase(),
+    name: result.user.displayName,
+    email: result.user.email,
+    active: result.user.enabled,
+  };
+};
+
+// Mock logout API function
 const logoutApi = async () => {
-  await new Promise(resolve => setTimeout(resolve, 500));
+  // Simulate API delay
+  // await new Promise(resolve => setTimeout(resolve, 500));
+  localStorage.removeItem("authToken");
+  localStorage.removeItem("refreshToken");
   return true;
 };
 
+// Custom hooks for mutations
 const useLoginMutation = (setUser: (user: User | null) => void) => {
   return useMutation({
     mutationFn: loginApi,
     onSuccess: (user) => {
+      // Save user data to localStorage
       localStorage.setItem('user', JSON.stringify(user));
       setUser(user);
       
+      // Redirect to role-specific dashboard
       if (user.role === "admin") {
         window.location.href = "/admin";
       } else if (user.role === "librarian") {
@@ -139,37 +133,67 @@ const useLoginMutation = (setUser: (user: User | null) => void) => {
       }
     },
     onError: (error) => {
+      // Handle login error
       console.error("Login failed:", error);
+      // You could add toast notification here
     }
   });
 };
 
+// const useRegisterMutation = (setUser: (user: User | null) => void) => {
+//   return useMutation({
+//     mutationFn: registerApi,
+//     onSuccess: (user) => {
+//       localStorage.setItem('user', JSON.stringify(user));
+//       setUser(user);
+//     }
+//   });
+// };
+
 const useRegisterMutation = (setUser: (user: User | null) => void) => {
+  const { toast } = useToast();
+
   return useMutation({
     mutationFn: registerApi,
-    onSuccess: (user) => {
-      localStorage.setItem('user', JSON.stringify(user));
-      setUser(user);
+    onSuccess: (_user) => {
+      toast({
+        title: "Registration Successful",
+        description: "Please log in to access your dashboard.",
+      });
+
+      setUser(null); // Prevent automatic login
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Registration Failed",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   });
 };
+
 
 const useLogoutMutation = (setUser: (user: User | null) => void) => {
   const { toast } = useToast();
   return useMutation({
     mutationFn: logoutApi,
     onSuccess: () => {
+      // Clear user data and tokens
       localStorage.removeItem('user');
       localStorage.removeItem('authToken');
       localStorage.removeItem('refreshToken');
       
+      // Set user to null in state
       setUser(null);
       
+      // Show a toast notification
       toast({
         title: "Logged out successfully",
         description: "You have been logged out of your account",
       });
       
+      // Redirect to login page
       window.location.href = "/auth";
     }
   });

@@ -45,15 +45,19 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const isMobile = useMobile();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  // Handle logout
   const handleLogout = () => {
     logoutMutation.mutate();
   };
 
+  // Close mobile sidebar when navigating
   useEffect(() => {
     setIsSidebarOpen(false);
   }, [location]);
 
+  // Nav items based on user role
   const getNavItems = () => {
+    // Determine the dashboard URL based on user role
     const dashboardUrl = user?.role === "admin" 
       ? "/admin" 
       : user?.role === "librarian" 
@@ -78,21 +82,22 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         ...commonItems,
         { label: "Manage Books", icon: <BookOpen className="h-4 w-4 mr-3" />, href: "/librarian/books" },
         { label: "Issue Books", icon: <BookPlus className="h-4 w-4 mr-3" />, href: "/librarian/issue" },
-        { label: "Return Books", icon: <RotateCcw className="h-4 w-4 mr-3" />, href: "/librarian/return" },
-        { label: "Manage Users", icon: <UserCheck className="h-4 w-4 mr-3" />, href: "/librarian/manage-users" },
+        { label: "Return Books", icon: <RotateCcw className="h-4 w-4 mr-3" />, href: "/librarian/return" }
       ];
     } else {
       return [
         ...commonItems,
         { label: "Borrow Books", icon: <BookOpen className="h-4 w-4 mr-3" />, href: "/student/borrow" },
         { label: "Return Books", icon: <RotateCcw className="h-4 w-4 mr-3" />, href: "/student/return" },
-        { label: "View Status", icon: <Clock className="h-4 w-4 mr-3" />, href: "/student/status" },
+        { label: "Borrowing and Renewal", icon: <Clock className="h-4 w-4 mr-3" />, href: "/student/status" },
         { label: "Request Books", icon: <PlusCircle className="h-4 w-4 mr-3" />, href: "/student/request" },
       ];
     }
   };
 
+  // Get mobile navigation items
   const getMobileNavItems = () => {
+    // Determine the dashboard URL based on user role
     const dashboardUrl = user?.role === "admin" 
       ? "/admin" 
       : user?.role === "librarian" 
@@ -130,6 +135,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   return (
     <div className="min-h-screen flex bg-white text-slate-900 dark:bg-gray-900 dark:text-slate-100 transition-colors duration-300">
+      {/* Sidebar for desktop */}
       <aside className="hidden md:flex md:flex-col md:w-64 bg-primary-50 dark:bg-gray-800 border-r border-slate-200 dark:border-slate-700 transition-all duration-300 shadow-sm">
         <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center">
           <Button variant="ghost" size="icon" className="mr-2">
@@ -143,6 +149,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         
         <div className="flex-1 overflow-y-auto py-4">
           <nav className="px-3 space-y-6">
+            {/* Main Navigation */}
             <div>
               <div className="mt-2 space-y-1">
                 {navItems.map((item) => (
@@ -163,6 +170,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               </div>
             </div>
             
+            {/* Help & Support */}
             <div>
               <p className="px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 Support
@@ -204,6 +212,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       </aside>
       
       <div className="flex-1 overflow-auto">
+        {/* Top Navigation Bar */}
         <header className="bg-white dark:bg-gray-900 border-b border-slate-200 dark:border-slate-700 shadow-sm sticky top-0 z-10">
           <div className="flex items-center justify-between h-16 px-4">
             <div className="flex items-center md:hidden">

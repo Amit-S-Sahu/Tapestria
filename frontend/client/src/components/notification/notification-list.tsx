@@ -32,14 +32,17 @@ const NotificationList: React.FC<NotificationListProps> = ({ notifications }) =>
   const [activeTab, setActiveTab] = useState("all");
   const { toast } = useToast();
 
+  // Filter notifications based on active tab
   const filteredNotifications = notifications.filter((notification) => {
     if (activeTab === "all") return true;
     if (activeTab === "unread") return !notification.read;
     return notification.type === activeTab;
   });
 
+  // Get unread count
   const unreadCount = notifications.filter((n) => !n.read).length;
 
+  // Mark notification as read
   const markAsReadMutation = useMutation({
     mutationFn: async (id: number) => {
       await apiRequest("PUT", `/api/notifications/${id}/read`);
@@ -56,6 +59,7 @@ const NotificationList: React.FC<NotificationListProps> = ({ notifications }) =>
     },
   });
 
+  // Get notification icon based on type
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case "borrow":
@@ -74,6 +78,7 @@ const NotificationList: React.FC<NotificationListProps> = ({ notifications }) =>
     }
   };
 
+  // Format notification date
   const formatDate = (dateValue: string | Date) => {
     const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
     const now = new Date();

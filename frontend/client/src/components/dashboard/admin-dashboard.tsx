@@ -16,8 +16,10 @@ const AdminDashboard = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
 
+  // Fetch librarians count
   const { data: librarians } = useQuery({
     queryKey: ["/admin/get-user-by-role/LIBRARIAN"],
+    // enabled: !!user && user.role.toLowerCase() === "admin",
     queryFn: async () => {
       const token = localStorage.getItem("authToken");
       if (!token) throw new Error("No authorization token found");
@@ -39,8 +41,15 @@ const AdminDashboard = () => {
     },
   });
 
+  // // Fetch students count
+  // const { data: students } = useQuery({
+  //   queryKey: ["/api/users/student"],
+  //   enabled: !!user && user.role === "admin"
+  // });
+
   const { data: students } = useQuery({
     queryKey: ["/admin/get-user-by-role/USER"],
+    // enabled: !!user && user.role.toLowerCase() === "admin",
     queryFn: async () => {
       const token = localStorage.getItem("authToken");
       if (!token) throw new Error("No authorization token found");
@@ -62,8 +71,17 @@ const AdminDashboard = () => {
     },
   });
 
+
+  // Fetch total fines for current month
+  // const currentDate = new Date();
+  // const { data: fineData } = useQuery({
+  //   queryKey: [`/api/reports/fines/month/${currentDate.getMonth()}/${currentDate.getFullYear()}`],
+  //   enabled: !!user && user.role === "admin"
+  // });
+
   const { data: fineData } = useQuery({
     queryKey: ["/admin/total-fine"],
+    // enabled: !!user && user.role === "admin",
     queryFn: async () => {
       const token = localStorage.getItem("authToken");
       if (!token) throw new Error("No authorization token found");
@@ -74,19 +92,13 @@ const AdminDashboard = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-
       const data = await response.json();
-  
-      if (!response.ok || data.statusCode !== 200) {
-        throw new Error(data.message || "Failed to fetch librarians");
-      }
-  
-      return data.userList;
+      
+      return data;
     },
   });
 
-  console.log("Fine Data : " + fineData);
-
+  // Fetch book requests
   const { data: bookRequests } = useQuery({
     queryKey: ["/api/book-requests"],
     enabled: !!user && user.role === "admin"
@@ -125,7 +137,7 @@ const AdminDashboard = () => {
         
         <StatsCard 
           title="Monthly Fines"
-          value={`$${fineData?.totalFines || 0}`}
+          value={`Rs. ${fineData || 0}`}
           icon={<BarChart3 className="h-5 w-5" />}
           description="Revenue from fines"
           className="bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400"
@@ -228,7 +240,7 @@ const AdminDashboard = () => {
                 <div className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-md">
                   <AlertOctagon className="h-5 w-5 text-amber-500" />
                   <div>
-                    <p className="text-sm font-medium">Fine collected: $12.50</p>
+                    <p className="text-sm font-medium">Fine collected: Rs. 12.50</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">From Student Michael - 3 days ago</p>
                   </div>
                 </div>

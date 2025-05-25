@@ -35,10 +35,12 @@ const StatsCard: React.FC<StatsCardProps> = ({
       <Card className="overflow-hidden shadow-sm">
         <CardContent className="p-0">
           <div className="flex flex-col">
+            {/* Top section with title */}
             <div className="p-4 pb-2">
               <p className="text-sm font-medium text-slate-600 dark:text-slate-400">{title}</p>
             </div>
             
+            {/* Main content */}
             <div className="px-4 pb-4 flex justify-between items-center">
               {isLoading ? (
                 <div className="h-8 w-16 bg-slate-200 dark:bg-slate-700 animate-pulse rounded mt-1"></div>
@@ -50,6 +52,7 @@ const StatsCard: React.FC<StatsCardProps> = ({
               </div>
             </div>
             
+            {/* Bottom section with description - styled like the reference image */}
             <div className="bg-slate-50 dark:bg-gray-800 p-2 text-xs border-t border-slate-200 dark:border-gray-700 px-4">
               {change !== undefined && (
                 <span className={cn(
